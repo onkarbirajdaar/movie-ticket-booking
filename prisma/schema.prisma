@@ -13,3 +13,34 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+model City {
+  id String   @id @default(uuid())
+  name String 
+  isActive Boolean @default(true)
+
+
+}
+model User{
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  passwordHash String
+  role Role @default(CUSTOMER)
+  phone String?
+  createdAt DateTime @default(now())
+}
+
+model Movie{
+  id String @id @default(uuid())
+  title String
+  synopsis String?
+  durationMinutes Int
+  language String
+  posterUrl String?
+  status String
+}
