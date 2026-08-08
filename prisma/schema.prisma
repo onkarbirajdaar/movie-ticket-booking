@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -14,33 +8,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model City {
+  id       String  @id @default(uuid())
+  name     String
+  isActive Boolean @default(true)
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  phone        String?
+  createdAt    DateTime @default(now())
+}
+
+model Movie {
+  id              String  @id @default(uuid())
+  title           String
+  synopsis        String?
+  durationMinutes Int
+  language        String
+  posterUrl       String?
+  status          String
+}
+
 enum Role {
   CUSTOMER
   ADMIN
-}
-model City {
-  id String   @id @default(uuid())
-  name String 
-  isActive Boolean @default(true)
-
-
-}
-model User{
-  id String @id @default(uuid())
-  name String
-  email String @unique
-  passwordHash String
-  role Role @default(CUSTOMER)
-  phone String?
-  createdAt DateTime @default(now())
-}
-
-model Movie{
-  id String @id @default(uuid())
-  title String
-  synopsis String?
-  durationMinutes Int
-  language String
-  posterUrl String?
-  status String
 }
