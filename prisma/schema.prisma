@@ -12,6 +12,25 @@ model City {
   id       String  @id @default(uuid())
   name     String
   isActive Boolean @default(true)
+  theatres Theatre[]
+}
+model Theatre {
+  id      String @id @default(uuid())
+  name    String
+  address String
+  cityId  String          
+  city    City   @relation(fields: [cityId], references: [id])   
+  screens Screen[]
+  amenities String?
+  isActive Boolean @default(true)
+}
+model Screen {
+  id      String @id @default(uuid())
+  name    String
+  format  String
+  totalSeats Int
+  theatreId String
+  theatre   Theatre @relation(fields: [theatreId], references: [id])
 }
 
 model User {
