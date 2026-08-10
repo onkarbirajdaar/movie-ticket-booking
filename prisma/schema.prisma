@@ -31,8 +31,24 @@ model Screen {
   totalSeats Int
   theatreId String
   theatre   Theatre @relation(fields: [theatreId], references: [id])
+  seats Seat[]
+  shows Show[]
 }
+model Seat{
+  id String @id @default(uuid())
+  screenId String
+  screen Screen @relation(fields: [screenId], references: [id])
 
+  rowLabel String
+  seatNumber Int
+  section String
+  seatType String
+  isActive Boolean @default(true)
+  isAccessible Boolean @default(false)
+  @@unique([screenId, rowLabel, seatNumber])
+  showSeats ShowSeat[]
+
+}
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -51,9 +67,36 @@ model Movie {
   language        String
   posterUrl       String?
   status          String
+  shows Show[]
 }
 
 enum Role {
   CUSTOMER
   ADMIN
+}
+
+model Show{
+  id String @id @default(uuid())
+  movieId String
+  movie Movie @relation(fields: [movieId], references: [id])
+  screenId String
+  screen Screen @relation(fields: [screenId], references: [id])
+  startsAt DateTime
+  endsAt DateTime
+  format String
+  language String
+  status String
+  showSeats ShowSeat[]
+}
+
+model ShowSeat{
+  id String @id @default(uuid())
+  showId String
+  show Show @relation(fields: [showId], references: [id])
+  seatId String
+  seat Seat @relation(fields: [seatId], references: [id])
+  price Float
+  status String
+  holdExpiresAt DateTime?
+  @@unique([showId, seatId])
 }
