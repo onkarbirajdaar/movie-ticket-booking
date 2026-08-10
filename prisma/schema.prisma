@@ -57,6 +57,7 @@ model User {
   role         Role     @default(CUSTOMER)
   phone        String?
   createdAt    DateTime @default(now())
+  bookings Booking[]
 }
 
 model Movie {
@@ -87,6 +88,7 @@ model Show{
   language String
   status String
   showSeats ShowSeat[]
+  bookings Booking[]
 }
 
 model ShowSeat{
@@ -99,4 +101,30 @@ model ShowSeat{
   status String
   holdExpiresAt DateTime?
   @@unique([showId, seatId])
+  bookingItems BookingItem[]
+}
+
+model Booking{
+  id String @id @default(uuid())
+  bookingCode String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  showId String
+  show Show @relation(fields: [showId], references: [id])
+  status String
+  subtotal Float
+  fees Float
+  tax Float
+  total Float
+  paymentStatus String
+  createdAt DateTime @default(now())
+  bookingItems BookingItem[]
+}
+model BookingItem{
+  id String @id @default(uuid())
+  bookingId String
+  booking Booking @relation(fields: [bookingId], references: [id])
+  showSeatId String
+  showseat ShowSeat @relation(fields: [showSeatId], references: [id])
+  price Float
 }
