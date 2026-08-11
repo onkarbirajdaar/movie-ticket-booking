@@ -6,7 +6,9 @@ const testDb = async (requestAnimationFrame, res) => {
             data: { name: 'Mumbai'},
         });
         res.json({message: "Database write successful", city});
-    } catch (error){
+    } 
+    catch (error)
+    {
         console.error(error);
         res.status(500).json({error: 'Database write failed'});
     }

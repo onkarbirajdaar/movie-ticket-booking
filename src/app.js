@@ -9,6 +9,7 @@ const movieRoutes = require('./routes/movies');
 
 const dbRoutes = require('./routes/test');
 app.use('/test-db', dbRoutes);
-const registerRoutes = require('./routes/auth');
-app.use('/register' , registerRoutes);
+
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
 module.exports = app;
