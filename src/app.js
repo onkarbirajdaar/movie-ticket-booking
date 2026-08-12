@@ -12,4 +12,10 @@ app.use('/test-db', dbRoutes);
 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
+
+const theatreRoutes = require('./routes/theatres');
+app.use('/theatres', theatreRoutes);
+
+const screenRoutes = require('./routes/screens');
+app.use('/screens', screenRoutes);
 module.exports = app;
