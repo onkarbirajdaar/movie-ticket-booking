@@ -20,7 +20,8 @@ const register = async (req, res) =>{
         
         
     } catch (error) {
-        console.error(error); res.status(500).json({ error: "Registration failed" });
+        console.error(error); 
+        res.status(500).json({ error: "Registration failed" });
         
     }
 
@@ -30,10 +31,10 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Step 2: look up the user — this was missing every time
+    // Step 2: look up the user 
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Step 3: user not found — generic error, per your own answer above
+    // Step 3: user not found 
     if (!user) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
@@ -41,12 +42,12 @@ const login = async (req, res) => {
     // Step 4: compare submitted password against the STORED hash (user.passwordHash, not a bare variable)
     const isValid = await bcrypt.compare(password, user.passwordHash);
 
-    // Step 5: wrong password — SAME generic error as step 3, not a different one
+    // Step 5: wrong password 
     if (!isValid) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
-    // Step 6: success — sign token using the real user object
+    // Step 6: success 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -60,4 +61,18 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+
+const getMe = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { id: true, name: true, email: true, role: true, createdAt: true },
+    });
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+};
+module.exports = { register, login, getMe };
+
