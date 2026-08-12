@@ -18,4 +18,7 @@ app.use('/theatres', theatreRoutes);
 
 const screenRoutes = require('./routes/screens');
 app.use('/screens', screenRoutes);
+
+const showRoutes = require('./routes/shows');
+app.use('/shows', showRoutes);
 module.exports = app;
