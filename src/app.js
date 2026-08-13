@@ -25,5 +25,8 @@ app.use('/shows', showRoutes);
 const seatRoutes = require('./routes/seats');
 app.use('/seats', seatRoutes);
 
+const showSeatRoutes = require('./routes/showSeats');
+app.use('/show-seats', showSeatRoutes);
+
 
 module.exports = app;
