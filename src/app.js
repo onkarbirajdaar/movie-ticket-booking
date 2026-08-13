@@ -29,4 +29,7 @@ const showSeatRoutes = require('./routes/showSeats');
 app.use('/show-seats', showSeatRoutes);
 
 
+const holdRoutes = require('./routes/holds');
+app.use('/holds', holdRoutes);
+
 module.exports = app;
