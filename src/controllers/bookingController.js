@@ -64,4 +64,64 @@ const createBooking = async (req, res) => {
   }
 };
 
-module.exports = { createBooking };
+const mockPayment = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { outcome } = req.body; // 'APPROVED', 'DECLINED', or 'PENDING' — simulated by the client
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { bookingItems: { include: { showseat: true } } },
+    });
+
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Booking already processed' });
+    }
+
+    if (outcome === 'APPROVED') {
+      const result = await prisma.$transaction(async (tx) => {
+        // Mark every seat in this booking as BOOKED (was HELD)
+        const showSeatIds = booking.bookingItems.map((item) => item.showSeatId);
+        await tx.showSeat.updateMany({
+          where: { id: { in: showSeatIds } },
+          data: { status: 'BOOKED', holdExpiresAt: null },
+        });
+
+        return tx.booking.update({
+          where: { id: bookingId },
+          data: { status: 'CONFIRMED', paymentStatus: 'SUCCESS' },
+        });
+      });
+
+      return res.json({ message: 'Payment approved', booking: result });
+    }
+
+    if (outcome === 'DECLINED') {
+      // Release the seats back to AVAILABLE, mark booking failed
+      const result = await prisma.$transaction(async (tx) => {
+        const showSeatIds = booking.bookingItems.map((item) => item.showSeatId);
+        await tx.showSeat.updateMany({
+          where: { id: { in: showSeatIds } },
+          data: { status: 'AVAILABLE', holdExpiresAt: null },
+        });
+
+        return tx.booking.update({
+          where: { id: bookingId },
+          data: { status: 'FAILED', paymentStatus: 'FAILED' },
+        });
+      });
+
+      return res.json({ message: 'Payment declined', booking: result });
+    }
+
+    // PENDING outcome — leave everything as-is, just acknowledge
+    res.json({ message: 'Payment pending', booking });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to process payment' });
+  }
+};
+
+module.exports = { createBooking, mockPayment };
+
