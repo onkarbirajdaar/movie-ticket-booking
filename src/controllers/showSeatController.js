@@ -33,6 +33,7 @@ const generateShowSeats = async (req, res) => {
   }
 };
 
+
 const getShowSeats = async (req, res) => {
   try {
     const showSeats = await prisma.showSeat.findMany({
@@ -40,11 +41,21 @@ const getShowSeats = async (req, res) => {
       include: { seat: true },
       orderBy: [{ seat: { rowLabel: 'asc' } }, { seat: { seatNumber: 'asc' } }],
     });
-    res.json(showSeats);
+
+    const now = new Date();
+    const withEffectiveStatus = showSeats.map((s) => ({
+      ...s,
+      status: s.status === 'HELD' && s.holdExpiresAt && s.holdExpiresAt < now
+        ? 'AVAILABLE'
+        : s.status,
+    }));
+
+    res.json(withEffectiveStatus);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch show-seats' });
   }
 };
+
 
 module.exports = { generateShowSeats, getShowSeats };

@@ -13,17 +13,20 @@ const createHold = async (req, res) => {
 
     const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS);
 
-    // The atomic conditional update — only succeeds if seat is currently AVAILABLE
     const result = await prisma.showSeat.updateMany({
-      where: {
-        id: showSeatId,
-        status: 'AVAILABLE',
-      },
-      data: {
-        status: 'HELD',
-        holdExpiresAt,
-      },
-    });
+  where: {
+    id: showSeatId,
+    OR: [
+      { status: 'AVAILABLE' },
+      { status: 'HELD', holdExpiresAt: { lt: new Date() } }, // expired hold, treat as available
+    ],
+  },
+  data: {
+    status: 'HELD',
+    holdExpiresAt,
+  },
+});
+    
 
     if (result.count === 0) {
       return res.status(409).json({ error: 'Seat is no longer available' });
