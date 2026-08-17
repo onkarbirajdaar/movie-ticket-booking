@@ -123,5 +123,51 @@ const mockPayment = async (req, res) => {
   }
 };
 
-module.exports = { createBooking, mockPayment };
+
+const getMyBookings = async (req, res) => {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { userId: req.user.userId },
+      include: {
+        show: { include: { movie: true, screen: { include: { theatre: true } } } },
+        bookingItems: { include: { showseat: { include: { seat: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(bookings);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch bookings' });
+  }
+};
+
+
+const getBookingByCode = async (req, res) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { bookingCode: req.params.code },
+      include: {
+        show: { include: { movie: true, screen: { include: { theatre: true } } } },
+        bookingItems: { include: { showseat: { include: { seat: true } } } },
+      },
+    });
+
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+
+    // Only the booking's owner (or an admin) can view it
+    if (booking.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized to view this booking' });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch booking' });
+  }
+};
+
+module.exports = { createBooking, mockPayment, getMyBookings, getBookingByCode };
+
+
+
 
